@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eggcellent Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>🥚 Eggcellent Tracker</h1>
+        <p>Your personal egg collection and incubation dashboard.</p>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <h2>Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Incubating Batches</h3>
+                    <p id="incubating-batches-count">0</p>
+                </div>
+                <div class="card">
+                    <h3>Total Eggs Incubating</h3>
+                    <p id="total-eggs-count">0</p>
+                </div>
+                <div class="card">
+                    <h3>Upcoming Hatches (7 Days)</h3>
+                    <p id="upcoming-hatches-count">0</p>
+                </div>
+                <div class="card">
+                    <h3>Overall Hatch Rate</h3>
+                    <p id="overall-hatch-rate">N/A</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="data-entry-grid">
+            <section class="add-batch-form">
+                <h2>+ Add Incubation Batch</h2>
+                <form id="add-batch-form">
+                    <div class="form-grid">
+                        <input type="text" id="batch-id" placeholder="Batch ID (e.g., RIR-2025-01)" required>
+                        <select id="species" required>
+                            <option value="" disabled selected>Select Species</option>
+                            <option data-days="21">Chicken</option>
+                            <option data-days="28">Duck (Pekin)</option>
+                            <option data-days="35">Duck (Muscovy)</option>
+                            <option data-days="18">Quail (Coturnix)</option>
+                            <option data-days="28">Turkey</option>
+                            <option data-days="30">Goose</option>
+                        </select>
+                        <input type="date" id="date-set" required title="Date Set">
+                        <input type="number" id="eggs-set" placeholder="Number of Eggs Set" min="1" required>
+                    </div>
+                    <button type="submit">Add Batch</button>
+                </form>
+            </section>
+
+            <section class="add-collection-form">
+                <h2>+ Add Collection Entry</h2>
+                <form id="add-collection-form">
+                    <div class="form-grid">
+                        <input type="date" id="collection-date" required title="Collection Date">
+                        <input type="text" id="collection-breed" placeholder="Breed/Coop" required>
+                        <input type="number" id="collection-count" placeholder="Eggs Collected" min="0" required>
+                        <input type="text" id="collection-notes" placeholder="Notes (optional)">
+                    </div>
+                    <button type="submit">Add Entry</button>
+                </form>
+            </section>
+        </div>
+
+        <section class="incubation-log">
+            <h2>Incubation Log</h2>
+            <div id="log-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Batch ID</th>
+                            <th>Species</th>
+                            <th>Date Set</th>
+                            <th>Eggs Set</th>
+                            <th>Lockdown / Hatch</th>
+                            <th>Results</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incubation-log-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="collection-log">
+            <h2>Daily Collection Log</h2>
+            <div id="collection-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Breed/Coop</th>
+                            <th>Eggs Collected</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="collection-log-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Eggcellent Tracker App</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

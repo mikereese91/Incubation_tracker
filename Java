@@ -1,0 +1,240 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
+    const addBatchForm = document.getElementById('add-batch-form');
+    const incubationLogBody = document.getElementById('incubation-log-body');
+    const addCollectionForm = document.getElementById('add-collection-form');
+    const collectionLogBody = document.getElementById('collection-log-body');
+
+    // --- DATA MANAGEMENT ---
+    let incubationBatches = JSON.parse(localStorage.getItem('incubationBatches')) || [];
+    let collectionEntries = JSON.parse(localStorage.getItem('collectionEntries')) || [];
+
+    const saveData = (key, data) => {
+        localStorage.setItem(key, JSON.stringify(data));
+    };
+
+    // --- INCUBATION LOG FUNCTIONS ---
+    const renderIncubationLog = () => {
+        incubationLogBody.innerHTML = '';
+        if (incubationBatches.length === 0) {
+            incubationLogBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No incubation batches yet.</td></tr>`;
+        }
+
+        incubationBatches.forEach((batch, index) => {
+            const row = document.createElement('tr');
+            if (batch.isEditing) {
+                // EDIT MODE
+                row.innerHTML = `
+                    <td><input type="text" class="edit-batch-id" value="${batch.id}"></td>
+                    <td>${batch.species}</td>
+                    <td><input type="date" class="edit-date-set" value="${batch.dateSet}"></td>
+                    <td><input type="number" class="edit-eggs-set" value="${batch.eggsSet}" min="1"></td>
+                    <td colspan="2">Editing...</td>
+                    <td>
+                        <button class="action-btn save-btn" data-index="${index}">Save</button>
+                    </td>
+                `;
+            } else {
+                // VIEW MODE
+                const incubationPeriod = parseInt(batch.incubationPeriod);
+                const dateSet = new Date(batch.dateSet + 'T00:00:00');
+                const lockdownDate = new Date(dateSet);
+                lockdownDate.setDate(dateSet.getDate() + incubationPeriod - 3);
+                const hatchDate = new Date(dateSet);
+                hatchDate.setDate(dateSet.getDate() + incubationPeriod);
+
+                row.innerHTML = `
+                    <td>${batch.id}</td>
+                    <td>${batch.species}</td>
+                    <td>${dateSet.toLocaleDateString()}</td>
+                    <td>${batch.eggsSet}</td>
+                    <td>
+                        Lockdown: ${lockdownDate.toLocaleDateString()}<br>
+                        Hatch: ${hatchDate.toLocaleDateString()}
+                    </td>
+                    <td>
+                        <select class="status-select" data-index="${index}">
+                            <option value="Incubating" ${batch.status === 'Incubating' ? 'selected' : ''}>Incubating</option>
+                            <option value="Completed" ${batch.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Cancelled" ${batch.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <input type="number" class="hatched-input" placeholder="Hatched" min="0" value="${batch.hatched || ''}" data-index="${index}">
+                    </td>
+                    <td>
+                        <button class="action-btn edit-btn" data-index="${index}">Edit</button>
+                        <button class="action-btn delete-btn" data-index="${index}">Delete</button>
+                    </td>
+                `;
+            }
+            incubationLogBody.appendChild(row);
+        });
+        updateDashboard();
+    };
+
+    // --- COLLECTION LOG FUNCTIONS ---
+    const renderCollectionLog = () => {
+        collectionLogBody.innerHTML = '';
+        if (collectionEntries.length === 0) {
+            collectionLogBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No collection entries yet.</td></tr>`;
+        }
+
+        collectionEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by most recent
+
+        collectionEntries.forEach((entry, index) => {
+            const row = document.createElement('tr');
+            if (entry.isEditing) {
+                // EDIT MODE
+                row.innerHTML = `
+                    <td><input type="date" class="edit-collection-date" value="${entry.date}"></td>
+                    <td><input type="text" class="edit-collection-breed" value="${entry.breed}"></td>
+                    <td><input type="number" class="edit-collection-count" value="${entry.count}" min="0"></td>
+                    <td><input type="text" class="edit-collection-notes" value="${entry.notes}"></td>
+                    <td>
+                        <button class="action-btn save-collection-btn" data-index="${index}">Save</button>
+                    </td>
+                `;
+            } else {
+                // VIEW MODE
+                row.innerHTML = `
+                    <td>${new Date(entry.date + 'T00:00:00').toLocaleDateString()}</td>
+                    <td>${entry.breed}</td>
+                    <td>${entry.count}</td>
+                    <td>${entry.notes}</td>
+                    <td>
+                        <button class="action-btn edit-collection-btn" data-index="${index}">Edit</button>
+                        <button class="action-btn delete-collection-btn" data-index="${index}">Delete</button>
+                    </td>
+                `;
+            }
+            collectionLogBody.appendChild(row);
+        });
+    };
+
+    // --- DASHBOARD UPDATE ---
+    const updateDashboard = () => {
+        const incubatingBatches = incubationBatches.filter(b => b.status === 'Incubating');
+        document.getElementById('incubating-batches-count').textContent = incubatingBatches.length;
+
+        const totalEggs = incubatingBatches.reduce((sum, b) => sum + parseInt(b.eggsSet), 0);
+        document.getElementById('total-eggs-count').textContent = totalEggs;
+
+        const today = new Date();
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+        
+        const upcomingHatches = incubatingBatches.filter(b => {
+             const hatchDate = new Date(new Date(b.dateSet).setDate(new Date(b.dateSet).getDate() + b.incubationPeriod));
+             return hatchDate >= today && hatchDate <= sevenDaysFromNow;
+        }).length;
+        document.getElementById('upcoming-hatches-count').textContent = upcomingHatches;
+
+        const completedBatches = incubationBatches.filter(b => b.status === 'Completed' && b.hatched > 0);
+        if (completedBatches.length > 0) {
+            const totalHatched = completedBatches.reduce((sum, b) => sum + parseInt(b.hatched), 0);
+            const totalSet = completedBatches.reduce((sum, b) => sum + parseInt(b.eggsSet), 0);
+            const hatchRate = ((totalHatched / totalSet) * 100).toFixed(1);
+            document.getElementById('overall-hatch-rate').textContent = `${hatchRate}%`;
+        } else {
+            document.getElementById('overall-hatch-rate').textContent = 'N/A';
+        }
+    };
+
+    // --- EVENT LISTENERS ---
+    addBatchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const speciesSelect = document.getElementById('species');
+        incubationBatches.push({
+            id: document.getElementById('batch-id').value,
+            species: speciesSelect.value,
+            incubationPeriod: parseInt(speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-days')),
+            dateSet: document.getElementById('date-set').value,
+            eggsSet: document.getElementById('eggs-set').value,
+            status: 'Incubating',
+            hatched: null,
+            isEditing: false
+        });
+        saveData('incubationBatches', incubationBatches);
+        renderIncubationLog();
+        addBatchForm.reset();
+    });
+
+    addCollectionForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        collectionEntries.push({
+            date: document.getElementById('collection-date').value,
+            breed: document.getElementById('collection-breed').value,
+            count: document.getElementById('collection-count').value,
+            notes: document.getElementById('collection-notes').value,
+            isEditing: false
+        });
+        saveData('collectionEntries', collectionEntries);
+        renderCollectionLog();
+        addCollectionForm.reset();
+    });
+
+    // Event Delegation for Clicks on Incubation Log Body
+    incubationLogBody.addEventListener('click', (e) => {
+        const index = e.target.dataset.index;
+        if (e.target.classList.contains('delete-btn')) {
+            if (confirm(`Delete batch "${incubationBatches[index].id}"?`)) {
+                incubationBatches.splice(index, 1);
+                saveData('incubationBatches', incubationBatches);
+                renderIncubationLog();
+            }
+        } else if (e.target.classList.contains('edit-btn')) {
+            incubationBatches[index].isEditing = true;
+            renderIncubationLog();
+        } else if (e.target.classList.contains('save-btn')) {
+            const row = e.target.closest('tr');
+            incubationBatches[index].id = row.querySelector('.edit-batch-id').value;
+            incubationBatches[index].dateSet = row.querySelector('.edit-date-set').value;
+            incubationBatches[index].eggsSet = row.querySelector('.edit-eggs-set').value;
+            incubationBatches[index].isEditing = false;
+            saveData('incubationBatches', incubationBatches);
+            renderIncubationLog();
+        }
+    });
+
+    // Event Delegation for Changes in Incubation Log Body
+    incubationLogBody.addEventListener('change', (e) => {
+        const index = e.target.dataset.index;
+        if (e.target.classList.contains('status-select')) {
+            incubationBatches[index].status = e.target.value;
+        } else if (e.target.classList.contains('hatched-input')) {
+            incubationBatches[index].hatched = e.target.value;
+        }
+        saveData('incubationBatches', incubationBatches);
+        updateDashboard();
+    });
+
+    // Event Delegation for Clicks on Collection Log Body
+    collectionLogBody.addEventListener('click', (e) => {
+        const index = e.target.dataset.index;
+        const originalIndex = collectionEntries.findIndex(entry => entry.date === collectionEntries.sort((a,b) => new Date(b.date) - new Date(a.date))[index].date && entry.breed === collectionEntries.sort((a,b) => new Date(b.date) - new Date(a.date))[index].breed);
+
+        if (e.target.classList.contains('delete-collection-btn')) {
+            if (confirm(`Delete this collection entry?`)) {
+                collectionEntries.splice(originalIndex, 1);
+                saveData('collectionEntries', collectionEntries);
+                renderCollectionLog();
+            }
+        } else if (e.target.classList.contains('edit-collection-btn')) {
+            collectionEntries[originalIndex].isEditing = true;
+            renderCollectionLog();
+        } else if (e.target.classList.contains('save-collection-btn')) {
+            const row = e.target.closest('tr');
+            collectionEntries[originalIndex].date = row.querySelector('.edit-collection-date').value;
+            collectionEntries[originalIndex].breed = row.querySelector('.edit-collection-breed').value;
+            collectionEntries[originalIndex].count = row.querySelector('.edit-collection-count').value;
+            collectionEntries[originalIndex].notes = row.querySelector('.edit-collection-notes').value;
+            collectionEntries[originalIndex].isEditing = false;
+            saveData('collectionEntries', collectionEntries);
+            renderCollectionLog();
+        }
+    });
+
+    // --- INITIAL RENDER ---
+    renderIncubationLog();
+    renderCollectionLog();
+});
+

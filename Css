@@ -1,0 +1,174 @@
+:root {
+    --primary-color: #3a5a40;
+    --secondary-color: #588157;
+    --edit-color: #34638a;
+    --delete-color: #c94c4c;
+    --background-color: #f7f6f1;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --heading-color: #344e41;
+    --border-color: #dad7cd;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem;
+    box-shadow: var(--shadow);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    gap: 2rem;
+}
+
+section {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+h2 {
+    color: var(--heading-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+/* Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--secondary-color);
+}
+
+.card p {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Forms */
+.data-entry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+input, select, button {
+    padding: 0.8rem;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: var(--primary-color);
+}
+
+/* Tables */
+#log-table-container, #collection-table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Action Buttons */
+.action-btn {
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 5px;
+}
+.edit-btn { background-color: var(--edit-color); }
+.save-btn { background-color: var(--secondary-color); }
+.delete-btn { background-color: var(--delete-color); }
+
+/* In-table inputs */
+td input, td select {
+    padding: 0.4rem;
+}
+.hatched-input { width: 70px; }
+.status-select { width: 120px; }
+
+@media (max-width: 768px) {
+    .data-entry-grid {
+        grid-template-columns: 1fr;
+    }
+}
